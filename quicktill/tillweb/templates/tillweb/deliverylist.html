@@ -25,7 +25,9 @@
 </table>
 <script type="text/javascript">
 $(document).ready(function(){
-  $("#deliveries").tablesorter();
+$("#deliveries").DataTable({
+order: [ [0, 'desc'] ]
+});
 });
 </script>
 </div>

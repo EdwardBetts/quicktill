@@ -45,7 +45,7 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
-  $("#depttakings").tablesorter();
+  $("#depttakings").DataTable();
 });
 </script>
   </div>

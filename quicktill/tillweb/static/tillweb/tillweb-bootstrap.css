@@ -31,10 +31,6 @@ table.index-summary-table td {
 .bbwarn { background-color: yellow !important; }
 .bberr { background-color: red !important; }
 
-/* Zebra tables */
-tbody tr.even td { background-color: #ddd; }
-tbody tr.odd td { background-color: #fff; }
-
 .error {
     color: red;
 }

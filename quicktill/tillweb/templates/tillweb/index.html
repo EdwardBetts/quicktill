@@ -87,7 +87,10 @@
     </div>
 <script type="text/javascript">
 $(document).ready(function(){
-  $("#stillageTable").tablesorter();
+$("#stillageTable").DataTable({
+paging: false,
+searching: false
+});
 });
 </script>
   </div>

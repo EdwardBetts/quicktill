@@ -24,8 +24,8 @@
 <td><a href="{{tl.get_absolute_url}}">{{tl.description}}</a></td>
 {% if exclude_column != "department" %}<td>{{tl.department}}</td>{% endif %}
 <td>{{tl.transcode}}{% if tl.voided_by_id %} <a href="{{tl.voided_by.get_absolute_url}}">(voided)</a>{% endif %}</td>
-<td>{% if tl.amount or tl.discount %}{{tl.items}} @ {{money}}{{tl.amount}} = {{money}}{{tl.total}}</span>{% endif %}</td>
-<td>{% if tl.discount %}{{money}}{{tl.total_discount}} ({{tl.discount_name}}){% endif %}</td>
+<td data-sort="{{tl.total}}">{% if tl.amount or tl.discount %}{{tl.items}} @ {{money}}{{tl.amount}} = {{money}}{{tl.total}}</span>{% endif %}</td>
+<td data-sort="{{tl.total_discount}}">{% if tl.discount %}{{money}}{{tl.total_discount}} ({{tl.discount_name}}){% endif %}</td>
 <td>{{tl.time|date:dtf}}</td>
 {% if exclude_column != "user" %}
 <td>{% if tl.user %}<a href="{{tl.user.get_absolute_url}}">{{tl.user.fullname}}</a>{% endif %}</td>{% endif %}
@@ -36,7 +36,9 @@
 </div>
 <script type="text/javascript">
 $(document).ready(function(){
-  $("#translines").tablesorter();
+$("#translines").DataTable({
+order: [ [1, 'asc'] ]
+});
 });
 </script>
 {% endif %}

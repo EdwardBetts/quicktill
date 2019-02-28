@@ -26,6 +26,6 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
-  $("#transactions-table").tablesorter();
+  $("#transactions-table").DataTable();
 });
 </script>

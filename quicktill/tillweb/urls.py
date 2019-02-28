@@ -74,6 +74,10 @@ tillurls = [
     url(r'^user/(?P<userid>\d+)/$', user, name="tillweb-till-user"),
 
     url(r'^reports/$', reportindex, name="tillweb-reports"),
+
+    url(r'^datatables/', include([
+        url(r'^sessions.json', sessions_data, name="datatable-sessions"),
+        ])),
 ]
 
 urls = [

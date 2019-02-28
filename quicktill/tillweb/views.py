@@ -1,4 +1,5 @@
 from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.template import RequestContext, Context
@@ -300,6 +301,32 @@ class Pager:
         return render_to_string("tillweb/pager.html", context={
             'pager': self})
 
+def _datatables_order(query, columns, params):
+    onum = 0
+    while True:
+        order_col = params.get('order[{}][column]'.format(onum), None)
+        if order_col is None:
+            break
+        order_col = int(order_col)
+        order_dir = params.get('order[{}][dir]'.format(onum), None)
+        if order_dir is None:
+            break
+        is_desc = (order_dir == 'desc')
+        expr = columns[order_col]
+        if is_desc:
+            expr = expr.desc()
+        query = query.order_by(expr)
+        onum += 1
+    return query
+
+def _datatables_paginate(query, params):
+    start = int(params["start"])
+    length = int(params["length"])
+    query = query.offset(start)
+    if length >= 0:
+        query = query.limit(length)
+    return query
+
 @tillweb_view
 def pubroot(request, info, session):
     date = datetime.date.today()
@@ -430,23 +457,60 @@ def sessionfinder(request, info, session):
     else:
         rangeform = SessionSheetForm()
 
+    return ('sessions.html',
+            {'nav': [("Sessions", info.reverse("tillweb-sessions"))],
+             'form': form,
+             'rangeform': rangeform})
+
+@tillweb_view
+def sessions_data(request, info, session):
+    columns = [
+        Session.id,
+        Session.date,
+        func.to_char(Session.date, 'Day'),
+        Session.discount_total,
+        Session.total,
+        Session.actual_total,
+        Session.error,
+    ]
+    draw = int(request.GET["draw"])
+    search_value = request.GET["search[value]"]
+    print(request.GET)
     sessions = session\
                .query(Session)\
                .options(undefer('total'),
                         undefer('actual_total'),
-                        undefer('discount_total'))\
-               .order_by(desc(Session.id))
+                        undefer('discount_total'))
+    count = sessions.count()
 
-    pager = Pager(request, sessions)
+    # Apply filters - we only filter on weekday name
+    if search_value:
+        sessions = sessions.filter(columns[2].ilike(search_value + '%'))
 
-    return ('sessions.html',
-            {'nav': [("Sessions", info.reverse("tillweb-sessions"))],
-             'recent': pager.items,
-             'pager': pager,
-             'nextlink': pager.nextlink(),
-             'prevlink': pager.prevlink(),
-             'form': form,
-             'rangeform': rangeform})
+    filtered_count = sessions.count()
+
+    # Apply orders
+    sessions = _datatables_order(sessions, columns, request.GET)
+    # Apply pagination
+    sessions = _datatables_paginate(sessions, request.GET)
+
+    sessions = sessions.all()
+    data = [
+        {'id': s.id,
+         'url': s.get_absolute_url(),
+         'date': s.date,
+         'day': s.date.weekday(),
+         'discount': s.discount_total,
+         'total': s.total,
+         'actual_total': s.actual_total,
+         'error': s.error,
+         'DT_RowClass': "table-warning" if s.actual_total is None else None,
+         } for s in sessions ]
+    return JsonResponse({
+        'draw': draw,
+        'recordsTotal': count,
+        'recordsFiltered': filtered_count,
+        'data': data})
 
 @tillweb_view
 def session(request, info, session, sessionid):
@@ -818,7 +882,6 @@ def stock(request, info, session, stockid):
 def stocklinelist(request, info, session):
     regular = session\
               .query(StockLine)\
-              .order_by(StockLine.dept_id, StockLine.name)\
               .filter(StockLine.linetype == "regular")\
               .options(joinedload("stockonsale"))\
               .options(joinedload("stockonsale.stocktype"))\
@@ -826,14 +889,12 @@ def stocklinelist(request, info, session):
     display = session\
               .query(StockLine)\
               .filter(StockLine.linetype == "display")\
-              .order_by(StockLine.name)\
               .options(joinedload("stockonsale"))\
               .options(undefer("stockonsale.used"))\
               .all()
     continuous = session\
                  .query(StockLine)\
                  .filter(StockLine.linetype == "continuous")\
-                 .order_by(StockLine.name)\
                  .options(undefer("stocktype.remaining"))\
                  .all()
     return ('stocklines.html', {

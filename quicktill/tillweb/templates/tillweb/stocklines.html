@@ -31,7 +31,7 @@
 <td><a href="{% url "tillweb-location" pubname=pubname location=line.location %}">{{line.location}}</a></td>
 <td>{% if line.department %}<a href="{{line.department.get_absolute_url}}">{{line.department}}</a>{% endif %}</td>
 <td>{% if line.pullthru %}{{line.pullthru}}{% endif %}</td>
-<td>{% if line.stockonsale %}<a href="{{line.stockonsale.0.get_absolute_url}}">{{line.stockonsale.0.id}}: {{line.stockonsale.0.stocktype}}</a>{% endif %}</td>
+{% if line.stockonsale %}<td data-sort="{{line.stockonsale.0.id}}"><a href="{{line.stockonsale.0.get_absolute_url}}">{{line.stockonsale.0.id}}: {{line.stockonsale.0.stocktype}}</a></td>{% else %}<td data-sort=""></td>{% endif %}
 </tr>
 {% endfor %}
 </tbody>
@@ -39,7 +39,9 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
-  $("#regularstocklinelist").tablesorter();
+$("#regularstocklinelist").DataTable({
+"order": [1, 'asc']
+});
 });
 </script>
 
@@ -83,7 +85,7 @@ $(document).ready(function(){
 
 <script type="text/javascript">
 $(document).ready(function(){
-  $("#displaystocklinelist").tablesorter();
+  $("#displaystocklinelist").DataTable();
 });
 </script>
 
@@ -114,7 +116,7 @@ $(document).ready(function(){
 <td><a href="{{line.get_absolute_url}}">{{line.name}}</a></td>
 <td><a href="{% url "tillweb-location" pubname=pubname location=line.location %}">{{line.location}}</a></td>
 <td><a href="{{line.stocktype.get_absolute_url}}">{{line.stocktype.format}}</a></td>
-<td>{{line.stocktype.remaining}} {{line.stocktype.unit}}s</td>
+<td data-sort="{{line.stocktype.remaining}}">{{line.stocktype.remaining}} {{line.stocktype.unit}}s</td>
 </tr>
 {% endfor %}
 </tbody>
@@ -122,7 +124,7 @@ $(document).ready(function(){
 
 <script type="text/javascript">
 $(document).ready(function(){
-  $("#continuousstocklinelist").tablesorter();
+  $("#continuousstocklinelist").DataTable();
 });
 </script>
 

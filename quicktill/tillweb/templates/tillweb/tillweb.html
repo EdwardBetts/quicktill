@@ -4,13 +4,21 @@
 
 {% block style %}
 {# We assume the base template provides Bootstrap 4 #}
+<link rel="STYLESHEET" type="text/css" href="{% static "tillweb/tillweb-bootstrap.css" %}">
+<link rel="STYLESHEET" type="text/css" href="{% static "tillweb/datatables.min.css" %}">
 {{ block.super }}
-<link rel="STYLESHEET" type="text/css" href="{% static "tillweb/tillweb-bootstrap.css" %}" />
 {% endblock %}
 {% block jquery %}
 {# We assume jquery and jquery-ui are already present #}
 {{ block.super }}
-<script type="text/javascript" src="{% static "tillweb/jquery.tablesorter.js" %}"></script>
+<script type="text/javascript" src="{% static "tillweb/datatables.min.js" %}"></script>
+<script type="text/javascript">
+  $.extend( $.fn.dataTable.defaults, {
+  paging: false,
+  pageLength: 25,
+  searching: false
+  } );
+</script>
 {% endblock %}
 {% block breadcrumbs %}
 {{ block.super }}

@@ -16,7 +16,7 @@
 
 <h2>Recent sessions</h2>
 
-<table class="table table-striped table-hover table-sm" id="recentsessions">
+<table class="table table-sm" id="recentsessions">
   <thead class="thead-light">
     <tr>
       <th scope="col">ID</th>
@@ -28,32 +28,63 @@
       <th scope="col">Difference</th>
     </tr>
   </thead>
-<tbody>
-{% for s in pager.items %}
-<tr>
-<td><a href="{{s.get_absolute_url}}">{{s.id}}</a></td>
-<td><a href="{{s.get_absolute_url}}">{{s.date}}</a></td>
-<td>{{s.date|date:"l"}}</td>
-<td>{% if s.discount_total %}{{money}}{{s.discount_total}}{% endif %}</td>
-<td>{{money}}{{s.total}}</td>
-{% if s.actual_total %}
-<td>{{money}}{{s.actual_total}}</td>
-<td>{{money}}{{s.error}}</td>
-{% else %}
-<td></td>
-<th></td>
-{% endif %}
-</tr>
-{% endfor %}
-</tbody>
+  <tbody></tbody>
 </table>
 <script type="text/javascript">
+function render_money(data, type, row) {
+    if (data && Math.abs(data) > 0.001) {
+	return '{{money}}' + data;
+    }
+    return '';
+};
+
+function render_session_link(data, type, row) {
+    return '<a href="' + row['url'] + '">' + data + '</a>'
+};
+
+function render_day(data, type, row) {
+    days = [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+	     'Friday', 'Saturday', 'Sunday' ];
+    return days[data]
+};
+
 $(document).ready(function(){
-  $("#recentsessions").tablesorter();
+    $("#recentsessions").DataTable({
+	ajax: {
+	    url: '{% url "datatable-sessions" pubname=pubname %}',
+	    dataSrc: 'data'
+	},
+	columns: [
+	    { data: 'id',
+	      render: render_session_link,
+	      searchable: false },
+	    { data: 'date',
+	      render: render_session_link,
+	      searchable: false },
+	    { data: 'day',
+	      orderable: false,
+	      render: render_day },
+	    { data: 'discount',
+	      render: render_money,
+	      searchable: false },
+	    { data: 'total',
+	      render: render_money,
+	      searchable: false },
+	    { data: 'actual_total',
+	      render: render_money,
+	      searchable: false },
+	    { data: 'error',
+	      render: render_money,
+	      searchable: false }
+	],
+	order: [ [0, 'desc'] ],
+	searching: true,
+	paging: true,
+	serverSide: true
+    });
 });
 </script>
 <p></p>
-{{pager.as_html}}
 
 <h2>Download spreadsheet</h2>
 <form action="" method="post">{% csrf_token %}

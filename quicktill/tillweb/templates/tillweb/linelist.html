@@ -8,7 +8,8 @@
     <th scope="col">ABV</th>
     <th scope="col">Price</th>
     <th scope="col">Started</th>
-    <th scope="col" colspan="2" class="sorter-false">State</th>
+    <th scope="col">State</th>
+    <th></th>{% comment %}DataTables fails on colspan in headers{% endcomment %}
   </tr>
 </thead>
 <tbody>
@@ -34,7 +35,7 @@
 <tr>
 <td><a href="{{line.get_absolute_url}}">
 {{line.name}}</a></td><td></td><td></td><td></td><td></td><td></td>
-<td colspan="2"></td></tr>
+<td></td><td></td></tr>
 {% endfor %}
 {% endfor %}
 </tbody>
@@ -43,6 +44,19 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
-  $("#linelist").tablesorter();
+$("#linelist").DataTable({
+"paging": false,
+"searching": false,
+"columns": [
+null,
+null,
+null,
+null,
+null,
+null,
+{ "orderable": false },
+{ "orderable": false }
+]
+});
 });
 </script>
